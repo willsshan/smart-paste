@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Paste</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="floating-panel">
+        <header class="panel-topbar" data-tauri-drag-region>
+          <div class="brand" data-tauri-drag-region>
+            <div class="brand-mark">A</div>
+            <div data-tauri-drag-region>
+              <p class="eyebrow">Clipboard</p>
+              <h1>AI Paste</h1>
+            </div>
+          </div>
+          <span class="panel-hint">跟随光标</span>
+        </header>
+
+        <section class="panel search-panel">
+          <label class="search">
+            <input id="search-input" type="search" placeholder="搜索最近内容" />
+          </label>
+        </section>
+
+        <section class="history-cloud">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Recent</p>
+              <h2>历史</h2>
+            </div>
+            <button id="refresh-btn" class="ghost-button">刷新</button>
+          </div>
+          <div id="debug-status" class="debug-status" aria-live="polite"></div>
+          <div id="history-list" class="history-list"></div>
+        </section>
+
+        <footer class="panel-footer">
+          <span class="hotkey-pill">Ctrl + Shift + V</span>
+          <button id="seed-btn" class="primary-button">演示</button>
+        </footer>
+      </main>
+    </div>
+
+    <script src="./tauri-global.js"></script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
