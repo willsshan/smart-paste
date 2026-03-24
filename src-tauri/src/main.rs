@@ -20,7 +20,14 @@ fn start_clipboard_monitor<R: tauri::Runtime + 'static>(app: tauri::AppHandle<R>
             let maybe_item = {
                 let app_state = app.state::<Mutex<AppState>>();
                 let mut state = app_state.lock().expect("app state poisoned");
-                state.clipboard.capture_text(text, None)
+
+                match state.clipboard.capture_text(text, None) {
+                    Ok(item) => item,
+                    Err(error) => {
+                        eprintln!("failed to persist clipboard item: {error}");
+                        None
+                    }
+                }
             };
 
             if let Some(item) = maybe_item {
@@ -55,7 +62,6 @@ fn start_hotkey_listener<R: tauri::Runtime + 'static>(app: tauri::AppHandle<R>) 
 
 fn main() {
     tauri::Builder::default()
-        .manage(Mutex::new(AppState::new()))
         .invoke_handler(tauri::generate_handler![
             commands::history::get_history,
             commands::history::read_current_clipboard,
@@ -81,6 +87,12 @@ fn main() {
             }
         })
         .setup(|app| {
+            let app_data_dir = app.path().app_data_dir().map_err(|error| error.to_string())?;
+            let db_path = app_data_dir.join("clipboard-history.sqlite3");
+            let app_state = AppState::new(db_path)?;
+
+            app.manage(Mutex::new(app_state));
+
             let handle = app.handle().clone();
             commands::window::position_main_window(&handle);
 

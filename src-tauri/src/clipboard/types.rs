@@ -11,6 +11,27 @@ pub enum ClipboardItemKind {
     Html,
 }
 
+impl ClipboardItemKind {
+    pub fn as_db_value(&self) -> &'static str {
+        match self {
+            Self::Text => "text",
+            Self::Image => "image",
+            Self::File => "file",
+            Self::Html => "html",
+        }
+    }
+
+    pub fn from_db_value(value: &str) -> Option<Self> {
+        match value {
+            "text" => Some(Self::Text),
+            "image" => Some(Self::Image),
+            "file" => Some(Self::File),
+            "html" => Some(Self::Html),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct ClipboardItem {
     pub id: String,
@@ -37,6 +58,26 @@ impl ClipboardItem {
             is_pinned: false,
         }
     }
+
+    pub fn from_persisted(
+        id: String,
+        kind: &str,
+        content: String,
+        preview: String,
+        source_app: Option<String>,
+        created_at: DateTime<Utc>,
+        is_pinned: bool,
+    ) -> Option<Self> {
+        Some(Self {
+            id,
+            kind: ClipboardItemKind::from_db_value(kind)?,
+            content,
+            preview,
+            source_app,
+            created_at,
+            is_pinned,
+        })
+    }
 }
 
 fn build_preview(content: &str) -> String {
@@ -44,9 +85,8 @@ fn build_preview(content: &str) -> String {
     let preview: String = sanitized.chars().take(64).collect();
 
     if sanitized.chars().count() > 64 {
-      format!("{preview}...")
+        format!("{preview}...")
     } else {
-      preview
+        preview
     }
 }
-

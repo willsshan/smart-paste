@@ -123,7 +123,9 @@ pub fn get_history(state: State<'_, Mutex<AppState>>, query: Option<String>) -> 
     let mut state = state.lock().expect("app state poisoned");
 
     if let Some(text) = read_clipboard_text() {
-        let _ = state.clipboard.capture_text(text, None);
+        if let Err(error) = state.clipboard.capture_text(text, None) {
+            eprintln!("failed to persist clipboard item from get_history: {error}");
+        }
     }
 
     state.clipboard.history(query.as_deref())
@@ -135,13 +137,16 @@ pub fn read_current_clipboard() -> Option<String> {
 }
 
 #[tauri::command]
-pub fn seed_demo_history(state: State<'_, Mutex<AppState>>) {
+pub fn seed_demo_history(state: State<'_, Mutex<AppState>>) -> Result<(), String> {
     let mut state = state.lock().expect("app state poisoned");
-    state.clipboard.seed_demo_entries();
+    state.clipboard.seed_demo_entries()
 }
 
 #[tauri::command]
-pub fn toggle_pin(state: State<'_, Mutex<AppState>>, item_id: String) -> Option<ClipboardItem> {
+pub fn toggle_pin(
+    state: State<'_, Mutex<AppState>>,
+    item_id: String,
+) -> Result<Option<ClipboardItem>, String> {
     let mut state = state.lock().expect("app state poisoned");
     state.clipboard.toggle_pin(&item_id)
 }
@@ -169,7 +174,3 @@ pub fn paste_history_item(
     });
     Ok(())
 }
-
-
-
-
